@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "ShineMD"
+message: "If you use this software, please cite the repository."
+type: software
+authors:
+  - family-names: "Sanchis"
+    given-names: "Iván"
+repository-code: "https://github.com/sanchisivan/ShineMD"
+license: "MIT"
+version: "1.0.0"
+date-released: 2026-03-20
+abstract: >
+  ShineMD is an interactive R Shiny application for molecular dynamics
+  trajectory analysis and visualization, including structural analysis,
+  clustering, dimensionality reduction, interaction analysis, and
+  publication-ready outputs.

@@ -186,6 +186,48 @@ h1, h2, h3, h4, h5, h6, p, span, label, .form-group label {
   border-radius: 6px !important;
   font-family: var(--font-body) !important;
 }
+/* Selected pills / tags inside multi-select */
+.selectize-input .item {
+  background: rgba(6,214,160,0.16) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(6,214,160,0.38) !important;
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  margin: 1px 2px !important;
+}
+.selectize-input .item.active {
+  background: rgba(6,214,160,0.30) !important;
+  color: #fff !important;
+  border-color: rgba(6,214,160,0.60) !important;
+}
+/* Remove button (×) inside each pill */
+.selectize-input .item .remove {
+  color: var(--accent-cyan) !important;
+  border-left: 1px solid rgba(6,214,160,0.30) !important;
+  margin-left: 4px !important;
+  padding-left: 4px !important;
+}
+.selectize-input .item .remove:hover {
+  color: var(--accent-warm) !important;
+  background: transparent !important;
+}
+/* Dropdown option rows */
+.selectize-dropdown .option {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  padding: 6px 10px !important;
+}
+.selectize-dropdown .option:hover,
+.selectize-dropdown .option.active {
+  background: rgba(6,214,160,0.14) !important;
+  color: #fff !important;
+}
+/* Placeholder text */
+.selectize-input.has-items input::placeholder,
+.selectize-input input::placeholder {
+  color: var(--text-muted) !important;
+}
 .form-control:focus {
   border-color: var(--accent-cyan) !important;
   box-shadow: 0 0 0 2px rgba(6, 214, 160, 0.15) !important;
@@ -3998,7 +4040,12 @@ server <- function(input, output, session) {
     info_rmsdB = list(
       title = "RMSD — Selection B",
       body = tagList(
-        tags$p("Same RMSD panel for Selection B (if provided). You can overlay backbone and heavy-atom RMSD in the same plot when both selections are available.")
+        tags$p("Root-mean-square deviation (Å) of Selection B vs the reference frame. Mirrors the Selection A panel for your second group of atoms (e.g., lipid headgroups, a second peptide, or a receptor domain)."),
+        tags$ul(
+          tags$li("Useful for comparing stability between two molecular systems or regions."),
+          tags$li("Low/stable RMSD → structural stability; step changes → conformational transitions."),
+          tags$li("Use together with Selection A RMSD and the interaction panels to relate structural changes to binding events.")
+        )
       )
     ),
     info_rmsf = list(
@@ -4024,7 +4071,11 @@ server <- function(input, output, session) {
     info_rgB = list(
       title = "Radius of gyration — Selection B",
       body = tagList(
-        tags$p("Radius of gyration (Å) for Selection B (if provided).")
+        tags$p("Radius of gyration (Å): compactness of Selection B over time. Mirrors the Selection A panel for your second group of atoms."),
+        tags$ul(
+          tags$li("Decrease → compaction or insertion; increase → unfolding or extension."),
+          tags$li("Compare with Selection A Rg and with the interaction distance panels to see whether compaction correlates with binding.")
+        )
       )
     ),
     info_dimred = list(
@@ -4207,15 +4258,36 @@ server <- function(input, output, session) {
     ),
     info_clustDist = list(
       title = "Cluster distribution",
-      body = tagList(tags$p("2D/3D embedding of frames based on RMSD distances (MDS/PCA fallback). Helps visualize state separation."))
+      body = tagList(
+        tags$p("2D or 3D embedding of all analyzed frames based on their pairwise RMSD distances (MDS; PCA used as fallback). Each point is a trajectory frame, colored by cluster assignment."),
+        tags$ul(
+          tags$li("Well-separated clouds → distinct conformational states with low inter-cluster RMSD."),
+          tags$li("Overlapping regions → gradual conformational transitions or closely related states."),
+          tags$li("Use the 'Toggle 3D distribution' button to switch between 2D and interactive 3D views.")
+        )
+      )
     ),
     info_clustTime = list(
       title = "Clusters vs time",
-      body = tagList(tags$p("Scatter of cluster assignment over time. Useful to see transitions and dwell times."))
+      body = tagList(
+        tags$p("Scatter plot of cluster assignment over the simulation time. Each point is a frame colored by its cluster."),
+        tags$ul(
+          tags$li("Long stretches of a single cluster → stable conformational state or slow dynamics."),
+          tags$li("Rapid alternation between clusters → fast exchange or sampling of a transition region."),
+          tags$li("Use this plot together with the RMSD time series to correlate structural transitions with specific time windows.")
+        )
+      )
     ),
     info_clustPop = list(
       title = "Cluster population",
-      body = tagList(tags$p("Number of frames per cluster (and %). Helps identify dominant states."))
+      body = tagList(
+        tags$p("Bar chart showing the number of frames (and percentage) assigned to each cluster."),
+        tags$ul(
+          tags$li("Dominant clusters (high %) usually represent the most thermodynamically stable states."),
+          tags$li("Very small clusters may reflect transient states or outlier frames — inspect them in a 3D viewer."),
+          tags$li("Population is a proxy for relative free energy: more populated states have lower free energy.")
+        )
+      )
     ),
     info_clustQual = list(
       title = "Cluster quality (silhouette)",
@@ -4230,7 +4302,14 @@ server <- function(input, output, session) {
     ),
     info_clustDend = list(
       title = "Dendrogram",
-      body = tagList(tags$p("Hierarchical clustering tree. Useful to choose k and understand cluster relationships."))
+      body = tagList(
+        tags$p("Hierarchical clustering tree built from the pairwise RMSD matrix. Only available when using the hclust method."),
+        tags$ul(
+          tags$li("Branch height represents the RMSD dissimilarity at which two groups merge."),
+          tags$li("Cut the tree at a given height (analogous to choosing k) to define a desired number of clusters."),
+          tags$li("Tight subtrees with low merge heights → conformationally similar frame groups.")
+        )
+      )
     ),
     info_rmsdHeatmap = list(
       title = "Pairwise RMSD matrix",
@@ -4327,17 +4406,17 @@ server <- function(input, output, session) {
         modalButton("Cancel"),
         actionButton(paste0("confirm_", modal_key), action_label, class = "btn-primary")
       ),
-      tags$p("Choose which loaded trajectory files will be used for this calculation."),
+      tags$p("Choose which loaded trajectory files will be used for this calculation. All files are selected by default; deselect any segments you want to exclude."),
       selectizeInput(
         inputId = paste0(modal_key, "_trajs"),
         label = "Trajectory files",
         choices = labs,
         selected = labs,
         multiple = TRUE,
-        options = list(placeholder = 'Select trajectory files')
+        options = list(placeholder = 'Select trajectory files', plugins = list('remove_button'))
       ),
       tags$small(style = "color: var(--text-muted);",
-                 "The file order follows the current Trajectory order defined in the Project tab.")
+                 "The concatenation order follows the Trajectory order defined in the Project tab. Click the \u00d7 on any tag to deselect a file.")
     ))
   }
 
@@ -4624,7 +4703,12 @@ server <- function(input, output, session) {
       show_themed_completion(
         title_text = "Membrane analysis finished",
         hero_title = "Bilayer thickness computed",
-        subtitle = "You can now inspect the Thickness plot and download the CSV."
+        subtitle = "The bilayer thickness time series is ready. Results were also exported as a CSV file.",
+        steps = c(
+          "Go to the Membrane systems tab and inspect the Bilayer thickness plot.",
+          "Use the Plot styling + export panel to customize the figure and save it as PNG/SVG.",
+          "Download the CSV (membrane_thickness.csv) from the export button for further analysis in R or Python."
+        )
       )
     }, error = function(e) {
       showNotification(paste0("Thickness failed: ", e$message), type = "error", duration = 10)
@@ -4678,8 +4762,13 @@ server <- function(input, output, session) {
       })
       show_themed_completion(
         title_text = "Membrane analysis finished",
-        hero_title = "Area per lipid computed",
-        subtitle = "You can now inspect the APL plot and download the CSV."
+        hero_title = "Area per lipid (APL) computed",
+        subtitle = "The APL time series is ready. Results were also exported as a CSV file.",
+        steps = c(
+          "Go to the Membrane systems tab and inspect the Area per lipid plot.",
+          "Compare APL values with reference lipid bilayer benchmarks (e.g., ~68 Å² for POPC at 300 K).",
+          "Download the CSV (membrane_apl.csv) from the export button for further statistical analysis."
+        )
       )
     }, error = function(e) {
       showNotification(paste0("APL failed: ", e$message), type = "error", duration = 10)
@@ -4749,8 +4838,13 @@ server <- function(input, output, session) {
       })
       show_themed_completion(
         title_text = "Membrane analysis finished",
-        hero_title = "Lipid enrichment computed",
-        subtitle = "You can now inspect the enrichment plot and download the CSV."
+        hero_title = "Lipid enrichment around target computed",
+        subtitle = "Headgroup contact counts per frame are ready. Results were also exported as CSV files.",
+        steps = c(
+          "Go to the Membrane systems tab and inspect the Lipid enrichment plot.",
+          "If 'separate by lipid type' was enabled, compare the enrichment curves per lipid species to identify selectivity.",
+          "Download the CSV files (lipid_enrichment.csv / lipid_enrichment_summary.csv) for further analysis."
+        )
       )
     }, error = function(e) {
       showNotification(paste0("Enrichment failed: ", e$message), type = "error", duration = 10)
@@ -4823,8 +4917,13 @@ server <- function(input, output, session) {
       })
       show_themed_completion(
         title_text = "Membrane analysis finished",
-        hero_title = "Density profiles computed",
-        subtitle = "You can now inspect the membrane density profile plot and download the CSV."
+        hero_title = "Membrane density profiles computed",
+        subtitle = "Component density profiles along the bilayer normal are ready. Results were also exported as a CSV file.",
+        steps = c(
+          "Go to the Membrane systems tab and inspect the Density profiles plot.",
+          "Headgroups should peak near the two leaflet interfaces; tails in the hydrophobic core; water/ions outside the bilayer.",
+          "Download the CSV (membrane_density_profile.csv) for publication-ready profile plots in external tools."
+        )
       )
     }, error = function(e) {
       showNotification(paste0("Density profile failed: ", e$message), type = "error", duration = 10)
@@ -4882,8 +4981,14 @@ server <- function(input, output, session) {
       })
       show_themed_completion(
         title_text = "Membrane analysis finished",
-        hero_title = "Lipid tail order profile computed",
-        subtitle = "You can now inspect the |S| profile and download the CSV."
+        hero_title = "Lipid tail order (|S|) profile computed",
+        subtitle = "Segmental order parameters along the acyl chains are ready. Results were also exported as a CSV file.",
+        steps = c(
+          "Go to the Membrane systems tab and inspect the Lipid tail order profile plot.",
+          "Higher |S| values near the glycerol backbone indicate ordered chains; values decrease toward the terminal methyl.",
+          "If only one point appears for a lipid type, check that the tail regex correctly matches the expected atom names.",
+          "Download the CSV (lipid_tail_order_profile.csv) to compare order parameters across conditions or systems."
+        )
       )
     }, error = function(e) {
       showNotification(paste0("Lipid order failed: ", e$message), type = "error", duration = 10)
@@ -4954,7 +5059,13 @@ server <- function(input, output, session) {
       show_themed_completion(
         title_text = "Interaction analysis finished",
         hero_title = "Selection A / Selection B interaction metrics computed",
-        subtitle = "You can now inspect the distance/contact plots and download the CSV tables."
+        subtitle = "Distance, contact, and residue occupancy data are ready. Results were also exported as CSV files.",
+        steps = c(
+          "Go to the Interactions tab and inspect the time series plots (minimum distance, COM distance, atom contacts).",
+          "Check the Residue contact occupancy panel to identify the most persistent interface residues.",
+          "Use the A/B residue contact map to pinpoint which pairs form the dominant interaction patch.",
+          "Download the CSV tables (ab_interaction_timeseries.csv, ab_interaction_occupancy.csv) for further analysis."
+        )
       )
     }, error = function(e) {
       showNotification(paste0("Interaction analysis failed: ", e$message), type = "error", duration = 10)
@@ -5023,7 +5134,13 @@ server <- function(input, output, session) {
       show_themed_completion(
         title_text = "Hydrogen-bond proxy analysis finished",
         hero_title = "A / B hydrogen-bond proxy metrics computed",
-        subtitle = "You can now inspect the time series, persistent donor/acceptor pairs, and download the CSV tables."
+        subtitle = "H-bond proxy counts and donor/acceptor pair occupancies are ready. Results were also exported as CSV files.",
+        steps = c(
+          "Go to the Interactions tab and inspect the H-bond proxy time series plot.",
+          "Check the Persistent donor/acceptor pairs panel to identify the most stable polar contacts across the trajectory.",
+          "Remember: this is a distance-based proxy without angle filtering — confirm key pairs in a 3D viewer if needed.",
+          "Download the CSV tables (ab_hbond_proxy_timeseries.csv, ab_hbond_proxy_pairs.csv) for further analysis."
+        )
       )
     }, error = function(e) {
       showNotification(paste0("H-bond proxy analysis failed: ", e$message), type = "error", duration = 10)

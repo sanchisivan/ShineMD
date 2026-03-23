@@ -1,68 +1,118 @@
 # ShineMD
 
-**ShineMD** is an interactive **R Shiny** application for molecular dynamics trajectory analysis and visualization.
+**ShineMD** is an interactive R Shiny application for molecular dynamics (MD) trajectory analysis and visualization. It provides a fully graphical, browser-based interface for processing and exploring MD simulations — no scripting required.
 
-It provides a user-friendly interface for processing and exploring molecular dynamics simulations, with a focus on structural analysis, dimensionality reduction, clustering, interaction analysis, and publication-ready outputs.
+Developed at the **Laboratory of Bioactive Peptides (LPB)**, Faculty of Biochemistry and Biological Sciences, National University of the Littoral (UNL), Santa Fe, Argentina.
 
-## Main features
+---
 
-- Upload and process molecular dynamics projects
-- Support for AMBER topology and trajectory files
-- RMSD analysis
-- RMSF analysis
-- Radius of gyration analysis
-- PCA and low-dimensional structural exploration
-- Free energy landscape visualization
-- Interaction analysis between atom selections
-- Membrane-related analyses
-- Structural clustering
-- Interactive visualization with exportable plots and representative structures
+## Features
+
+| Category | Analyses |
+|---|---|
+| **Structural** | RMSD, RMSF, Radius of Gyration |
+| **Dimensionality reduction** | PCA, Free Energy Landscape (FEL) |
+| **Membrane biophysics** | Bilayer thickness, Area per lipid, Density profiles, Lipid tail order \|S\|, Lipid enrichment, COM distances |
+| **Interactions** | Contact time series, Residue occupancy, Contact map (heatmap), H-bond proxy analysis |
+| **Clustering** | Hierarchical (Ward.D2) and k-medoids (PAM), Structure export (medoids, centroids, single frames) |
+| **Reproducibility** | Session info export, package version tracking |
+
+All plots are interactive (pan, zoom, hover), support dark/light themes, and can be exported as PDF, PNG, or SVG. Data tables are downloadable as CSV.
+
+---
 
 ## Input
 
-ShineMD is intended to work with project folders containing simulation files such as:
+ShineMD works with **AMBER** simulation files:
 
-- topology files (for example, AMBER `.prmtop`)
-- trajectory files (for example, NetCDF `.nc`)
+| File | Extension |
+|---|---|
+| Topology | `.prmtop` |
+| Trajectory | `.nc` (NetCDF) |
+| Optional reference structure | `.pdb`, `.rst7`, `.inpcrd`, `.crd` |
+
+Multiple trajectory segments (e.g. `prod_1.nc`, `prod_2.nc`, …) are automatically detected, naturally sorted, and can be concatenated into a continuous timeline.
+
+---
 
 ## Requirements
 
-ShineMD runs in **R** and uses **Shiny** together with several scientific and visualization packages.
+ShineMD runs in **R** (≥ 4.0 recommended). Install all required packages from CRAN:
 
-## Run locally
+```r
+install.packages(c(
+  "shiny", "shinydashboard", "shinyjs", "shinyWidgets", "shinyFiles",
+  "plotly", "ggplot2", "DT", "htmlwidgets",
+  "bio3d", "ncdf4", "fs"
+))
+```
 
-Open R in the project folder and run:
+---
+
+## Installation and usage
+
+Clone the repository:
+
+```bash
+git clone https://github.com/sanchisivan/ShineMD.git
+```
+
+Open R in the `ShineMD/` folder and run:
 
 ```r
 shiny::runApp()
 ```
 
+The app will open in your default web browser. If not, navigate to the URL shown in the R console (e.g. `http://127.0.0.1:XXXX`).
+
+---
+
+## Documentation
+
+A full **User Manual** is available in this repository:
+
+**[USER_MANUAL.md](USER_MANUAL.md)**
+
+The manual covers every tab, parameter, analysis, and export option in detail, along with tips and troubleshooting guidance.
+
+---
+
 ## Repository structure
 
-```text
-ShineMD/
-├── app.R
-├── README.md
-├── .gitignore
-├── LICENSE
-├── CITATION.cff
-└── www/
 ```
+ShineMD/
+├── app.R              # Main application (UI + server)
+├── README.md
+├── USER_MANUAL.md     # Complete user documentation
+├── CITATION.cff
+├── LICENSE
+├── .gitignore
+└── www/               # Static assets (logos)
+```
+
+---
 
 ## Citation
 
-If you use ShineMD in academic work, please cite the associated publication and/or this repository.
+If you use ShineMD in academic work, please cite this repository:
 
-Suggested citation:
+> Sanchis I. *ShineMD: an interactive Shiny application for molecular dynamics trajectory analysis.* GitHub repository. https://github.com/sanchisivan/ShineMD
 
-**Sanchis I. ShineMD: an interactive Shiny application for molecular dynamics trajectory analysis. GitHub repository.**
+A `CITATION.cff` file is included for reference managers and GitHub's *Cite this repository* feature.
+
+---
 
 ## Contact
 
-**Iván Sanchis**  
-Laboratory of Bioactive Peptides  
-Faculty of Biochemistry and Biological Sciences  
-National University of the Littoral (UNL)  
-Santa Fe, Argentina
+| | |
+|---|---|
+| **Dr. Iván Sanchis** (app development) | sanchisivan@fbcb.unl.edu.ar |
+| **Prof. Álvaro Sebastián Siano** (group leader) | asiano@fbcb.unl.edu.ar |
 
-GitHub: [sanchisivan](https://github.com/sanchisivan)
+Laboratory of Bioactive Peptides · Faculty of Biochemistry and Biological Sciences · UNL · Santa Fe, Argentina
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.

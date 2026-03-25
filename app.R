@@ -6083,6 +6083,16 @@ output$tbl_cluster_summary <- renderDT({
     c(as.numeric(minv), as.numeric(maxv))
   }
 
+  # ggplot coord_cartesian limits: accepts single-sided (NA = use data range).
+  # Returns NULL when no limit is set, so coord_cartesian is skipped entirely.
+  gg_axis_lim <- function(minv, maxv, scale = "linear") {
+    if (!identical(scale %||% "linear", "linear")) return(NULL)
+    lo <- if (!is.null(minv) && is.finite(minv)) as.numeric(minv) else NA_real_
+    hi <- if (!is.null(maxv) && is.finite(maxv)) as.numeric(maxv) else NA_real_
+    if (is.na(lo) && is.na(hi)) return(NULL)
+    c(lo, hi)
+  }
+
   plotly_axis_from_style <- function(st, axis = c("x","y"), default_title = "") {
     axis <- match.arg(axis)
     title_use <- axis_title_or(if (axis == "x") st$x_title else st$y_title, default_title)
@@ -6311,9 +6321,10 @@ output$tbl_cluster_summary <- renderDT({
       }
     }
 
-    if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") {
-      p <- p + coord_cartesian(ylim = c(style$y_min, style$y_max))
-    }
+    xlim_gg <- gg_axis_lim(style$x_min, style$x_max, style$x_scale)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(xlim_gg) || !is.null(ylim_gg))
+      p <- p + coord_cartesian(xlim = xlim_gg, ylim = ylim_gg)
 
     p + labs(
       title = title,
@@ -6924,10 +6935,10 @@ output$tbl_cluster_summary <- renderDT({
     if ((style$x_scale %||% "linear") == "log") p <- p + scale_x_log10()
     if ((style$y_scale %||% "linear") == "log") p <- p + scale_y_log10()
 
-    # limits (linear only; log limits are ambiguous)
-    xlim <- if (is.finite(style$x_min) && is.finite(style$x_max) && (style$x_scale %||% "linear") == "linear") c(style$x_min, style$x_max) else NULL
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else NULL
-    if (!is.null(xlim) || !is.null(ylim)) p <- p + coord_cartesian(xlim = xlim, ylim = ylim)
+    # limits (linear only; log limits are ambiguous); single-sided limits (only min or only max) are supported
+    xlim_gg <- gg_axis_lim(style$x_min, style$x_max, style$x_scale)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(xlim_gg) || !is.null(ylim_gg)) p <- p + coord_cartesian(xlim = xlim_gg, ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, title = title) + gg_theme_pub(style)
     apply_palette(p, style)
@@ -6950,9 +6961,9 @@ output$tbl_cluster_summary <- renderDT({
     if ((style$x_scale %||% "linear") == "log") p <- p + scale_x_log10()
     if ((style$y_scale %||% "linear") == "log") p <- p + scale_y_log10()
 
-    xlim <- if (is.finite(style$x_min) && is.finite(style$x_max) && (style$x_scale %||% "linear") == "linear") c(style$x_min, style$x_max) else NULL
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else NULL
-    if (!is.null(xlim) || !is.null(ylim)) p <- p + coord_cartesian(xlim = xlim, ylim = ylim)
+    xlim_gg <- gg_axis_lim(style$x_min, style$x_max, style$x_scale)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(xlim_gg) || !is.null(ylim_gg)) p <- p + coord_cartesian(xlim = xlim_gg, ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, title = title) + gg_theme_pub(style)
     apply_palette(p, style)
@@ -6970,9 +6981,9 @@ output$tbl_cluster_summary <- renderDT({
     if ((style$x_scale %||% "linear") == "log") p <- p + scale_x_log10()
     if ((style$y_scale %||% "linear") == "log") p <- p + scale_y_log10()
 
-    xlim <- if (is.finite(style$x_min) && is.finite(style$x_max) && (style$x_scale %||% "linear") == "linear") c(style$x_min, style$x_max) else NULL
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else NULL
-    if (!is.null(xlim) || !is.null(ylim)) p <- p + coord_cartesian(xlim = xlim, ylim = ylim)
+    xlim_gg <- gg_axis_lim(style$x_min, style$x_max, style$x_scale)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(xlim_gg) || !is.null(ylim_gg)) p <- p + coord_cartesian(xlim = xlim_gg, ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, title = title, color = "Cluster") + gg_theme_pub(style)
     apply_palette(p, style)
@@ -6997,9 +7008,9 @@ output$tbl_cluster_summary <- renderDT({
     if ((style$x_scale %||% "linear") == "log") p <- p + scale_x_log10()
     if ((style$y_scale %||% "linear") == "log") p <- p + scale_y_log10()
 
-    xlim <- if (is.finite(style$x_min) && is.finite(style$x_max) && (style$x_scale %||% "linear") == "linear") c(style$x_min, style$x_max) else NULL
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else NULL
-    if (!is.null(xlim) || !is.null(ylim)) p <- p + coord_cartesian(xlim = xlim, ylim = ylim)
+    xlim_gg <- gg_axis_lim(style$x_min, style$x_max, style$x_scale)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(xlim_gg) || !is.null(ylim_gg)) p <- p + coord_cartesian(xlim = xlim_gg, ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, title = title, color = "Cluster") + gg_theme_pub(style)
     apply_palette(p, style)
@@ -7026,9 +7037,9 @@ output$tbl_cluster_summary <- renderDT({
     if ((style$x_scale %||% "linear") == "log") p <- p + scale_x_log10()
     if ((style$y_scale %||% "linear") == "log") p <- p + scale_y_log10()
 
-    xlim <- if (is.finite(style$x_min) && is.finite(style$x_max) && (style$x_scale %||% "linear") == "linear") c(style$x_min, style$x_max) else NULL
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else NULL
-    if (!is.null(xlim) || !is.null(ylim)) p <- p + coord_cartesian(xlim = xlim, ylim = ylim)
+    xlim_gg <- gg_axis_lim(style$x_min, style$x_max, style$x_scale)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(xlim_gg) || !is.null(ylim_gg)) p <- p + coord_cartesian(xlim = xlim_gg, ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, color = "Time (ns)", title = title) + gg_theme_pub(style)
     p
@@ -7050,8 +7061,8 @@ output$tbl_cluster_summary <- renderDT({
 
     if ((style$y_scale %||% "linear") == "log") p <- p + scale_y_log10()
 
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else NULL
-    if (!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(ylim_gg)) p <- p + coord_cartesian(ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, title = title) + gg_theme_pub(style)
     p
@@ -7069,8 +7080,8 @@ output$tbl_cluster_summary <- renderDT({
 
     if ((style$y_scale %||% "linear") == "log") p <- p + scale_y_log10()
 
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else NULL
-    if (!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (!is.null(ylim_gg)) p <- p + coord_cartesian(ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, fill = "Cluster", title = title) + gg_theme_pub(style)
     p
@@ -7093,8 +7104,10 @@ output$tbl_cluster_summary <- renderDT({
       p <- p + geom_hline(yintercept = sil_overall, linetype = "dotted", linewidth = 0.7)
     }
 
-    ylim <- if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") c(style$y_min, style$y_max) else c(min(-0.2, min(df$mean_silhouette, na.rm = TRUE) - 0.05), max(1, max(df$mean_silhouette, na.rm = TRUE) + 0.05))
-    if (!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
+    ylim_gg <- gg_axis_lim(style$y_min, style$y_max, style$y_scale)
+    if (is.null(ylim_gg)) ylim_gg <- c(min(-0.2, min(df$mean_silhouette, na.rm = TRUE) - 0.05),
+                                        max(1,    max(df$mean_silhouette, na.rm = TRUE) + 0.05))
+    p <- p + coord_cartesian(ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, fill = "Cluster", title = title) + gg_theme_pub(style)
     p

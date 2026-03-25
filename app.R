@@ -6279,7 +6279,7 @@ output$tbl_cluster_summary <- renderDT({
     do.call(rbind, out)
   }
 
-  make_rmsd_overlay_gg <- function(df, which = c("both", "backbone", "heavy"), title = "RMSD", style = NULL, combined = FALSE) {
+  make_rmsd_overlay_gg <- function(df, which = c("both", "backbone", "heavy"), title = "RMSD", style = NULL, combined = FALSE, smooth_k = 0) {
     which <- match.arg(which)
     style <- style %||% default_plot_style()
     long_df <- rmsd_series_long(df, which)
@@ -6293,6 +6293,22 @@ output$tbl_cluster_summary <- renderDT({
 
     if (isTRUE(style$show_points)) {
       p <- p + geom_point(size = style$point_size %||% 1.4, alpha = style$point_alpha %||% 0.8)
+    }
+
+    smooth_k <- as.integer(smooth_k %||% 0)
+    if (smooth_k >= 2) {
+      sm_rows <- do.call(rbind, lapply(unique(long_df$series), function(s) {
+        sub <- long_df[long_df$series == s, , drop = FALSE]
+        sm  <- running_mean(sub$rmsd_value, smooth_k)
+        data.frame(xcol_val = sub[[xcol]], rmsd_value = sm, series = paste0(s, " (avg ", smooth_k, ")"), stringsAsFactors = FALSE)
+      }))
+      sm_rows <- sm_rows[is.finite(sm_rows$rmsd_value), , drop = FALSE]
+      if (nrow(sm_rows) > 0) {
+        p <- p + geom_line(data = sm_rows,
+                           aes(x = xcol_val, y = rmsd_value, color = series, group = series),
+                           linewidth = (style$line_width %||% 0.6) + 0.6,
+                           inherit.aes = FALSE)
+      }
     }
 
     if (is.finite(style$y_min) && is.finite(style$y_max) && (style$y_scale %||% "linear") == "linear") {
@@ -6866,7 +6882,7 @@ output$tbl_cluster_summary <- renderDT({
     stop("Unsupported export format: ", fmt)
   }
 
-  make_timeseries_gg <- function(df, ycol, ylab, title, style) {
+  make_timeseries_gg <- function(df, ycol, ylab, title, style, smooth_k = 0) {
     req(df)
     xcol <- if (isTRUE(input$combine_trajs) && ("time_ns_global" %in% names(df)) && any(!is.na(df$time_ns_global))) "time_ns_global" else "time_ns"
     df <- df[order(df[[xcol]]), ]
@@ -6887,6 +6903,20 @@ output$tbl_cluster_summary <- renderDT({
       p <- p + geom_line(size = style$line_width %||% 1.2, color = single_cols[1])
       if (isTRUE(style$show_points)) {
         p <- p + geom_point(size = style$point_size %||% 3, alpha = style$point_alpha %||% 0.8, color = single_cols[1])
+      }
+    }
+
+    smooth_k <- as.integer(smooth_k %||% 0)
+    if (smooth_k >= 2) {
+      sm <- running_mean(df[[ycol]], smooth_k)
+      sm_df <- data.frame(xcol_val = df[[xcol]], ycol_val = sm, stringsAsFactors = FALSE)
+      sm_df <- sm_df[is.finite(sm_df$ycol_val), , drop = FALSE]
+      if (nrow(sm_df) > 0) {
+        p <- p + geom_line(data = sm_df,
+                           aes(x = xcol_val, y = ycol_val),
+                           color = "#ef476f",
+                           size = (style$line_width %||% 1.2) + 0.4,
+                           inherit.aes = FALSE)
       }
     }
 
@@ -7094,7 +7124,7 @@ output$tbl_cluster_summary <- renderDT({
     content = function(file) {
       req(rv$data$rmsd_pep)
       st <- style_for("rmsdA")
-      p <- make_rmsd_overlay_gg(rv$data$rmsd_pep, which = input$rmsdA_series %||% "both", title = "RMSD — Selection A", style = st, combined = isTRUE(input$combine_trajs))
+      p <- make_rmsd_overlay_gg(rv$data$rmsd_pep, which = input$rmsdA_series %||% "both", title = "RMSD — Selection A", style = st, combined = isTRUE(input$combine_trajs), smooth_k = input$rmsdA_smooth %||% 0)
       save_plot_file(p, file, st$fmt, st$width, st$height, st$dpi)
     }
   )
@@ -7103,7 +7133,7 @@ output$tbl_cluster_summary <- renderDT({
     content = function(file) {
       req(rv$data$rmsd_lipo)
       st <- style_for("rmsdB")
-      p <- make_rmsd_overlay_gg(rv$data$rmsd_lipo, which = input$rmsdB_series %||% "both", title = "RMSD — Selection B", style = st, combined = isTRUE(input$combine_trajs))
+      p <- make_rmsd_overlay_gg(rv$data$rmsd_lipo, which = input$rmsdB_series %||% "both", title = "RMSD — Selection B", style = st, combined = isTRUE(input$combine_trajs), smooth_k = input$rmsdB_smooth %||% 0)
       save_plot_file(p, file, st$fmt, st$width, st$height, st$dpi)
     }
   )
@@ -7180,7 +7210,7 @@ output$tbl_cluster_summary <- renderDT({
     content = function(file) {
       req(rv$data$rg_pep)
       st <- style_for("rgA")
-      p <- make_timeseries_gg(rv$data$rg_pep, "rg_A", "Rg (Å)", "Radius of gyration — Selection A", st)
+      p <- make_timeseries_gg(rv$data$rg_pep, "rg_A", "Rg (Å)", "Radius of gyration — Selection A", st, smooth_k = input$rgA_smooth %||% 0)
       save_plot_file(p, file, st$fmt, st$width, st$height, st$dpi)
     }
   )

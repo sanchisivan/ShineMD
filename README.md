@@ -110,7 +110,7 @@ A `CITATION.cff` file is included for reference managers and GitHub's *Cite this
 
 <p align="center">
   <strong>Laboratory of Bioactive Peptides (LPB)</strong><br>
-  Faculty of Biochemistry and Biological Sciences<br>
+  Faculty of Biochemistry and Biological Sciences (FBCB)<br>
   National University of the Littoral (UNL) · Santa Fe, Argentina
 </p>
 

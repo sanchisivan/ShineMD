@@ -104,12 +104,20 @@ A `CITATION.cff` file is included for reference managers and GitHub's *Cite this
 
 ## Contact
 
+<p align="center">
+  <img src="www/lpb_logo_unmatted.png" alt="Laboratory of Bioactive Peptides" width="220"/>
+</p>
+
+<p align="center">
+  <strong>Laboratory of Bioactive Peptides (LPB)</strong><br>
+  Faculty of Biochemistry and Biological Sciences<br>
+  National University of the Littoral (UNL) · Santa Fe, Argentina
+</p>
+
 | | |
 |---|---|
 | **Dr. Iván Sanchis** (app development) | sanchisivan@fbcb.unl.edu.ar |
 | **Prof. Álvaro Sebastián Siano** (group leader) | asiano@fbcb.unl.edu.ar |
-
-Laboratory of Bioactive Peptides · Faculty of Biochemistry and Biological Sciences · UNL · Santa Fe, Argentina
 
 ---
 

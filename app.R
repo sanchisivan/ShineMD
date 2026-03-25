@@ -6326,12 +6326,13 @@ output$tbl_cluster_summary <- renderDT({
     if (!is.null(xlim_gg) || !is.null(ylim_gg))
       p <- p + coord_cartesian(xlim = xlim_gg, ylim = ylim_gg)
 
-    p + labs(
+    p <- p + labs(
       title = title,
       x = axis_title_or(style$x_title, if (isTRUE(combined)) "Time (ns)" else "Time (ns)"),
       y = axis_title_or(style$y_title, "RMSD (Å)"),
       color = "Series"
     ) + gg_theme_pub(style)
+    apply_palette(p, style)
   }
 
 # RMSD plots
@@ -7084,7 +7085,7 @@ output$tbl_cluster_summary <- renderDT({
     if (!is.null(ylim_gg)) p <- p + coord_cartesian(ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, fill = "Cluster", title = title) + gg_theme_pub(style)
-    p
+    apply_palette(p, style)
   }
 
   make_cluster_quality_gg <- function(df_quality, sil_overall = NA_real_, title = "Cluster quality (mean silhouette)", style) {
@@ -7110,7 +7111,7 @@ output$tbl_cluster_summary <- renderDT({
     p <- p + coord_cartesian(ylim = ylim_gg)
 
     p <- p + labs(x = xlab_use, y = ylab_use, fill = "Cluster", title = title) + gg_theme_pub(style)
-    p
+    apply_palette(p, style)
   }
 
   # ───────────────────────────────────────────────────────────────────────────

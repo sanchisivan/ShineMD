@@ -1135,12 +1135,14 @@ run_basic_analysis <- function(project_dir,
   cols_lipoAll <- if (length(sels$B_all$atom) > 0) cols_for_atoms(sels$B_all$atom, subset_atom) else NULL
   cols_mem     <- if (length(sels$mem$atom) > 0) cols_for_atoms(sels$mem$atom, subset_atom) else NULL
 
-  # RMSF grouping by residue for CA atoms
+  # RMSF grouping by residue for CA atoms (Selection A and B)
   pdb_like <- try(as.pdb(prm), silent = TRUE)
   if (!inherits(pdb_like,"try-error") && !is.null(pdb_like$atom$resno)) {
-    rmsf_resno <- pdb_like$atom$resno[sels$pep_ca$atom]
+    rmsf_resno   <- pdb_like$atom$resno[sels$pep_ca$atom]
+    rmsf_resno_B <- if (length(sels$B_ca$atom) > 0) pdb_like$atom$resno[sels$B_ca$atom] else integer()
   } else {
-    rmsf_resno <- pep_resno[seq_len(length(sels$pep_ca$atom))]
+    rmsf_resno   <- pep_resno[seq_len(length(sels$pep_ca$atom))]
+    rmsf_resno_B <- if (length(sels$B_ca$atom) > 0) lipo_resno[seq_len(length(sels$B_ca$atom))] else integer()
   }
 
   # Pre-compute segment offsets in frames (true counts), for global time if combine=TRUE
@@ -1156,6 +1158,7 @@ run_basic_analysis <- function(project_dir,
   rg_pep_all <- list(); rg_lipo_all <- list()
   dist_all <- list(); z_all <- list()
   ca_accum <- NULL
+  ca_B_accum <- NULL
 
   start_frame_num <- if (is.null(first)) 1L else as.integer(first)
 
@@ -1290,6 +1293,10 @@ run_basic_analysis <- function(project_dir,
       xyz_ca_global <- kabsch_fit_xyz(fixed = ref_vec_global, mobile = xyz,
                                       fixed.inds = cols_align, mobile.inds = cols_align)
       ca_accum <- rbind(ca_accum, xyz_ca_global[, cols_pepCA, drop = FALSE])
+      # Selection B CA accumulation (same aligned frame)
+      cols_Bca <- if (length(sels$B_ca$atom) > 0) cols_for_atoms(sels$B_ca$atom, subset_atom) else NULL
+      if (!is.null(cols_Bca) && length(cols_Bca) >= 3)
+        ca_B_accum <- rbind(ca_B_accum, xyz_ca_global[, cols_Bca, drop = FALSE])
     }
   }
 
@@ -1327,6 +1334,12 @@ run_basic_analysis <- function(project_dir,
     write.csv(rmsf_df, file.path(out_dir,"rmsf_regionA_byres.csv"), row.names=FALSE)
     # Backward-compatible
     write.csv(rmsf_df, file.path(out_dir,"rmsf_peptide_byres.csv"), row.names=FALSE)
+  }
+  # RMSF Selection B
+  if (!is.null(ca_B_accum) && nrow(ca_B_accum) >= 2 && length(rmsf_resno_B) > 0) {
+    r_B <- rmsf(ca_B_accum, grpby = rmsf_resno_B)
+    rmsf_B_df <- data.frame(resno = unique(rmsf_resno_B), rmsf_B = as.numeric(r_B))
+    write.csv(rmsf_B_df, file.path(out_dir,"rmsf_regionB_byres.csv"), row.names=FALSE)
   }
 
   # PCA / dimensionality reduction on aligned Selection A Cα coordinates
@@ -3184,9 +3197,10 @@ seg3.nc"),
                               downloadButton("dl_rmsf_data", "Download plot data (CSV)", class="btn-default")
                        )
                      )
-)
+                 )
           )
-        )
+        ),
+        uiOutput("ui_rmsf_B")
       ),
 
       tabItem(
@@ -3980,6 +3994,7 @@ server <- function(input, output, session) {
     "toggle_plotly_theme_rmsd",
     "toggle_plotly_theme_rmsdB",
     "toggle_plotly_theme_rmsf",
+    "toggle_plotly_theme_rmsfB",
     "toggle_plotly_theme_rg",
     "toggle_plotly_theme_rgB",
     "toggle_plotly_theme_dimred",
@@ -4049,12 +4064,22 @@ server <- function(input, output, session) {
       )
     ),
     info_rmsf = list(
-      title = "RMSF (per residue)",
+      title = "RMSF (per residue) — Selection A",
       body = tagList(
-        tags$p("Root-mean-square fluctuation (Å) per residue (Cα-based)."),
+        tags$p("Root-mean-square fluctuation (Å) per residue (Cα-based) for Selection A."),
         tags$ul(
           tags$li("Highlights flexible loops/termini and rigid cores."),
           tags$li("Good to compare flexibility between conditions/systems.")
+        )
+      )
+    ),
+    info_rmsfB = list(
+      title = "RMSF (per residue) — Selection B",
+      body = tagList(
+        tags$p("Root-mean-square fluctuation (Å) per residue (Cα-based) for Selection B."),
+        tags$ul(
+          tags$li("Measures per-residue flexibility of the second selection (ligand, second domain, etc.)."),
+          tags$li("Compare with Selection A RMSF to identify differences in conformational flexibility between the two regions.")
         )
       )
     ),
@@ -4598,7 +4623,9 @@ server <- function(input, output, session) {
 
       rmsf_path <- file.path(rv$out_dir, "rmsf_regionA_byres.csv")
       if (!file.exists(rmsf_path)) rmsf_path <- file.path(rv$out_dir, "rmsf_peptide_byres.csv")
-      rv$data$rmsf <- if (file.exists(rmsf_path)) read.csv(rmsf_path) else NULL
+      rv$data$rmsf   <- if (file.exists(rmsf_path)) read.csv(rmsf_path) else NULL
+      rmsf_B_path <- file.path(rv$out_dir, "rmsf_regionB_byres.csv")
+      rv$data$rmsf_B <- if (file.exists(rmsf_B_path)) read.csv(rmsf_B_path) else NULL
       rv$data$pca_scores <- read_if_exists(file.path(rv$out_dir, "pca_regionA_scores.csv"))
       rv$data$pca_var <- normalize_pca_var_df(read_if_exists(file.path(rv$out_dir, "pca_regionA_variance.csv")))
       rv$data$mem_density <- read_if_exists(file.path(rv$out_dir, "membrane_density_profile.csv"))
@@ -6422,6 +6449,37 @@ output$tbl_cluster_summary <- renderDT({
             marker = list(size = st$point_size, opacity = st$point_alpha)) |>
       layout(xaxis=plotly_axis_from_style(st, "x", "Residue"), yaxis=plotly_axis_from_style(st, "y", "RMSF (Å)")) |> apply_plotly_theme()
   })
+
+  output$ui_rmsf_B <- renderUI({
+    if (!isTRUE(selection_b_active())) return(NULL)
+    fluidRow(
+      column(12,
+             box(title=box_title_with_info("RMSF (Selection B, per residue)", "info_rmsfB"), width=12, status="warning",
+                 fluidRow(
+                   column(8, plotlyOutput("plot_rmsf_B", height="450px")),
+                   column(4,
+                          plotly_theme_toggle_ui("toggle_plotly_theme_rmsfB", theme = rv$plotly_theme),
+                          plot_style_export_ui("rmsfB", show_points_default = TRUE, line_width_default = 1.0),
+                          tags$br(),
+                          downloadButton("dl_rmsfB_plot", "Download plot", class="btn-primary"),
+                          downloadButton("dl_rmsfB_data", "Download plot data (CSV)", class="btn-default")
+                   )
+                 )
+             )
+      )
+    )
+  })
+
+  output$plot_rmsf_B <- renderPlotly({
+    req(rv$data$rmsf_B)
+    st <- style_for("rmsfB", defaults = list(show_points = TRUE))
+    df <- rv$data$rmsf_B
+    mode_use <- if (isTRUE(st$show_points)) "lines+markers" else "lines"
+    plot_ly(df, x=~resno, y=~rmsf_B, type="scatter", mode = mode_use,
+            line = list(width = st$line_width),
+            marker = list(size = st$point_size, opacity = st$point_alpha)) |>
+      layout(xaxis=plotly_axis_from_style(st, "x", "Residue"), yaxis=plotly_axis_from_style(st, "y", "RMSF (Å)")) |> apply_plotly_theme()
+  })
 # Rg
   output$plot_rg_pep <- renderPlotly({
     req(rv$data$rg_pep)
@@ -6945,14 +7003,14 @@ output$tbl_cluster_summary <- renderDT({
     apply_palette(p, style)
   }
 
-  make_rmsf_gg <- function(df, title = "RMSF (Selection A)", style) {
+  make_rmsf_gg <- function(df, title = "RMSF (Selection A)", style, ycol = "rmsf_A") {
     req(df)
 
     xlab_use <- axis_title_or(style$x_title, "Residue")
     ylab_use <- axis_title_or(style$y_title, "RMSF (Å)")
 
     single_cols <- palette_export_cols(style)
-    p <- ggplot(df, aes(x = resno, y = rmsf_A)) +
+    p <- ggplot(df, aes(x = resno, y = .data[[ycol]])) +
       geom_line(size = style$line_width %||% 1.2, color = single_cols[1])
 
     if (isTRUE(style$show_points)) {
@@ -7165,7 +7223,23 @@ output$tbl_cluster_summary <- renderDT({
     content = function(file) {
       req(rv$data$rmsf)
       st <- style_for("rmsf", defaults = list(show_points = TRUE))
-      p <- make_rmsf_gg(rv$data$rmsf, "RMSF — Selection A", st)
+      p <- make_rmsf_gg(rv$data$rmsf, "RMSF — Selection A", st, ycol = "rmsf_A")
+      save_plot_file(p, file, st$fmt, st$width, st$height, st$dpi)
+    }
+  )
+  output$dl_rmsfB_data <- downloadHandler(
+    filename = function() "rmsf_regionB_plot_data.csv",
+    content = function(file) {
+      req(rv$data$rmsf_B)
+      write.csv(rv$data$rmsf_B, file, row.names = FALSE)
+    }
+  )
+  output$dl_rmsfB_plot <- downloadHandler(
+    filename = function() paste0("rmsf_regionB.", style_for("rmsfB")$fmt %||% "pdf"),
+    content = function(file) {
+      req(rv$data$rmsf_B)
+      st <- style_for("rmsfB", defaults = list(show_points = TRUE))
+      p <- make_rmsf_gg(rv$data$rmsf_B, "RMSF — Selection B", st, ycol = "rmsf_B")
       save_plot_file(p, file, st$fmt, st$width, st$height, st$dpi)
     }
   )

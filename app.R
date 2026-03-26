@@ -3404,6 +3404,12 @@ seg3.nc"),
                               actionButton("compute_density", "Compute density profiles", icon = icon("chart-area"),
                                            class="btn-primary", width="100%"),
                               tags$br(), tags$br(),
+                              checkboxGroupInput("dens_exclude_groups",
+                                                 "Exclude groups from plot/export:",
+                                                 choices  = c("Water", "Ions", "Headgroups", "Tails", "Target"),
+                                                 selected = "Water",
+                                                 inline   = FALSE),
+                              tags$br(),
                               plot_style_export_ui("memDensity", show_points_default = FALSE),
                               tags$br(),
                               div(class="download-stack",
@@ -6692,6 +6698,8 @@ output$tbl_cluster_summary <- renderDT({
     req(rv$data$mem_density)
     st <- style_for("memDensity")
     df <- rv$data$mem_density
+    excl <- input$dens_exclude_groups
+    if (length(excl) > 0) df <- df[!(df$group %in% excl), , drop = FALSE]
     mode_use <- if (isTRUE(st$show_points)) "lines+markers" else "lines"
     plot_ly(df, x = ~z_mid, y = ~density, color = ~group, type = "scatter", mode = mode_use,
             line = list(width = st$line_width),
@@ -7432,6 +7440,8 @@ output$tbl_cluster_summary <- renderDT({
       req(rv$data$mem_density)
       st <- style_for("memDensity")
       df <- rv$data$mem_density
+      excl <- isolate(input$dens_exclude_groups)
+      if (length(excl) > 0) df <- df[!(df$group %in% excl), , drop = FALSE]
       p <- ggplot(df, aes(x = z_mid, y = density, color = group)) +
         geom_line(linewidth = st$line_width) +
         labs(x = axis_title_or(st$x_title, "z (Å, membrane-centered)"),

@@ -2400,10 +2400,18 @@ compute_lipid_tail_order <- function(trajs_ordered, prm, membrane_resid,
 
   agg <- aggregate(cbind(sum_absS, n_obs) ~ lipid_type + chain + segment_index + segment_label,
                    data = pair_df, FUN = sum)
+  
   agg$absS <- agg$sum_absS / pmax(agg$n_obs, 1)
   agg$series <- if (isTRUE(by_type)) paste(agg$lipid_type, agg$chain, sep = " — ") else agg$chain
+  
+  agg <- agg[is.finite(agg$absS) & agg$n_obs > 0, , drop = FALSE]
+  if (nrow(agg) < 1) {
+    stop("No valid tail-order segments remained after aggregation. Check the residue names and regex patterns.")
+  }
+  
   agg$topology_mode <- topology_mode
-  agg <- agg[order(agg$series, agg$segment_index), c("lipid_type","chain","series","topology_mode","segment_index","segment_label","absS","n_obs")]
+  agg <- agg[order(agg$series, agg$segment_index),
+             c("lipid_type","chain","series","topology_mode","segment_index","segment_label","absS","n_obs")]
   rownames(agg) <- NULL
   agg
 }
@@ -6713,14 +6721,31 @@ output$tbl_cluster_summary <- renderDT({
     req(rv$data$mem_order)
     st <- style_for("memOrder")
     df <- rv$data$mem_order
-    df$series <- if ("series" %in% names(df)) df$series else if ("lipid_type" %in% names(df)) paste(df$lipid_type, df$chain, sep = " — ") else df$chain
+    
+    df$series <- if ("series" %in% names(df)) {
+      df$series
+    } else if ("lipid_type" %in% names(df)) {
+      paste(df$lipid_type, df$chain, sep = " — ")
+    } else {
+      df$chain
+    }
+    
+    df <- df[is.finite(df$absS) & !is.na(df$series), , drop = FALSE]
+    df$series <- droplevels(factor(as.character(df$series)))
+    
     mode_use <- if (isTRUE(st$show_points)) "lines+markers" else "lines"
-    plot_ly(df, x = ~segment_index, y = ~absS, color = ~series, text = ~segment_label,
-            type = "scatter", mode = mode_use,
-            line = list(width = st$line_width),
-            marker = list(size = st$point_size, opacity = st$point_alpha)) |>
-      layout(xaxis = plotly_axis_from_style(st, "x", "Tail segment index"),
-             yaxis = plotly_axis_from_style(st, "y", "|S|")) |>
+    
+    plot_ly(
+      df,
+      x = ~segment_index, y = ~absS, color = ~series, text = ~segment_label,
+      type = "scatter", mode = mode_use,
+      line = list(width = st$line_width),
+      marker = list(size = st$point_size, opacity = st$point_alpha)
+    ) |>
+      layout(
+        xaxis = plotly_axis_from_style(st, "x", "Tail segment index"),
+        yaxis = plotly_axis_from_style(st, "y", "|S|")
+      ) |>
       apply_plotly_theme()
   })
 

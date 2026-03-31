@@ -2932,7 +2932,7 @@ plot_style_export_ui <- function(prefix, title = "Plot styling + export",
                                 show_points_default = FALSE,
                                 base_size_default = 12, line_width_default = 1.2,
                                 point_size_default = 3, point_alpha_default = 0.8,
-                                fmt_default = "pdf", width_default = 7, height_default = 4, dpi_default = 300) {
+                                fmt_default = "png", width_default = 7, height_default = 4, dpi_default = 300) {
   tags$details(
     class = "plot-style",
     tags$summary(title),
@@ -5880,7 +5880,7 @@ output$cluster_ref_info <- renderUI({
   })
 
   output$dl_rmsdDist_plot <- downloadHandler(
-    filename = function() paste0("rmsd_distribution.", style_for("rmsdDist")$fmt %||% "pdf"),
+    filename = function() paste0("rmsd_distribution.", style_for("rmsdDist")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$rmsd_pep)
       st <- style_for("rmsdDist")
@@ -6092,7 +6092,7 @@ output$tbl_cluster_summary <- renderDT({
       point_size  = input[[paste0(prefix, "_point_size")]] %||% defaults$point_size %||% 3,
       point_alpha = input[[paste0(prefix, "_point_alpha")]] %||% defaults$point_alpha %||% 0.8,
       palette     = input[[paste0(prefix, "_palette")]] %||% defaults$palette %||% "default",
-      fmt         = tolower(input[[paste0(prefix, "_export_fmt")]] %||% defaults$fmt %||% "pdf"),
+      fmt         = tolower(input[[paste0(prefix, "_export_fmt")]] %||% defaults$fmt %||% "png"),
       width       = input[[paste0(prefix, "_export_width")]] %||% defaults$width %||% 7,
       height      = input[[paste0(prefix, "_export_height")]] %||% defaults$height %||% 4,
       dpi         = input[[paste0(prefix, "_export_dpi")]] %||% defaults$dpi %||% 300,
@@ -7225,7 +7225,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_rmsdA_plot <- downloadHandler(
-    filename = function() paste0("rmsd_regionA.", style_for("rmsdA")$fmt %||% "pdf"),
+    filename = function() paste0("rmsd_regionA.", style_for("rmsdA")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$rmsd_pep)
       st <- style_for("rmsdA")
@@ -7234,7 +7234,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_rmsdB_plot <- downloadHandler(
-    filename = function() paste0("rmsd_regionB.", style_for("rmsdB")$fmt %||% "pdf"),
+    filename = function() paste0("rmsd_regionB.", style_for("rmsdB")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$rmsd_lipo)
       st <- style_for("rmsdB")
@@ -7252,7 +7252,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_rmsf_plot <- downloadHandler(
-    filename = function() paste0("rmsf_regionA.", style_for("rmsf")$fmt %||% "pdf"),
+    filename = function() paste0("rmsf_regionA.", style_for("rmsf")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$rmsf)
       st <- style_for("rmsf", defaults = list(show_points = TRUE))
@@ -7268,7 +7268,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_rmsfB_plot <- downloadHandler(
-    filename = function() paste0("rmsf_regionB.", style_for("rmsfB")$fmt %||% "pdf"),
+    filename = function() paste0("rmsf_regionB.", style_for("rmsfB")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$rmsf_B)
       st <- style_for("rmsfB", defaults = list(show_points = TRUE))
@@ -7293,7 +7293,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_dimred_plot <- downloadHandler(
-    filename = function() paste0("pca_regionA_distribution.", style_for("dimred")$fmt %||% "pdf"),
+    filename = function() paste0("pca_regionA_distribution.", style_for("dimred")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$pca_scores)
       st <- style_for("dimred", defaults = list(show_points = TRUE))
@@ -7302,7 +7302,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_pcaVar_plot <- downloadHandler(
-    filename = function() paste0("pca_regionA_variance.", style_for("pcaVar")$fmt %||% "pdf"),
+    filename = function() paste0("pca_regionA_variance.", style_for("pcaVar")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$pca_var)
       st <- style_for("pcaVar", defaults = list(show_points = TRUE, line_width = 0.8))
@@ -7327,7 +7327,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_rgA_plot <- downloadHandler(
-    filename = function() paste0("rg_regionA.", style_for("rgA")$fmt %||% "pdf"),
+    filename = function() paste0("rg_regionA.", style_for("rgA")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$rg_pep)
       st <- style_for("rgA")
@@ -7336,7 +7336,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_rgB_plot <- downloadHandler(
-    filename = function() paste0("rg_regionB.", style_for("rgB")$fmt %||% "pdf"),
+    filename = function() paste0("rg_regionB.", style_for("rgB")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$rg_lipo)
       st <- style_for("rgB")
@@ -7361,7 +7361,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_memDist_plot <- downloadHandler(
-    filename = function() paste0("membrane_com_distance.", style_for("memDist")$fmt %||% "pdf"),
+    filename = function() paste0("membrane_com_distance.", style_for("memDist")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$dist)
       st <- style_for("memDist")
@@ -7370,7 +7370,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_memZ_plot <- downloadHandler(
-    filename = function() paste0("membrane_dz.", style_for("memZ")$fmt %||% "pdf"),
+    filename = function() paste0("membrane_dz.", style_for("memZ")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$z)
       st <- style_for("memZ")
@@ -7388,7 +7388,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_thick_plot <- downloadHandler(
-    filename = function() paste0("membrane_thickness.", style_for("memThick")$fmt %||% "pdf"),
+    filename = function() paste0("membrane_thickness.", style_for("memThick")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$thickness)
       st <- style_for("memThick")
@@ -7405,7 +7405,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_apl_plot <- downloadHandler(
-    filename = function() paste0("membrane_apl.", style_for("memAPL")$fmt %||% "pdf"),
+    filename = function() paste0("membrane_apl.", style_for("memAPL")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$apl)
       st <- style_for("memAPL")
@@ -7422,7 +7422,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_enrich_plot <- downloadHandler(
-    filename = function() paste0("lipid_enrichment.", style_for("memEnrich")$fmt %||% "pdf"),
+    filename = function() paste0("lipid_enrichment.", style_for("memEnrich")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$enrich)
       st <- style_for("memEnrich")
@@ -7460,7 +7460,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_density_plot <- downloadHandler(
-    filename = function() paste0("membrane_density_profile.", style_for("memDensity")$fmt %||% "pdf"),
+    filename = function() paste0("membrane_density_profile.", style_for("memDensity")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$mem_density)
       st <- style_for("memDensity")
@@ -7486,7 +7486,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_order_plot <- downloadHandler(
-    filename = function() paste0("lipid_tail_order_profile.", style_for("memOrder")$fmt %||% "pdf"),
+    filename = function() paste0("lipid_tail_order_profile.", style_for("memOrder")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$mem_order)
       st <- style_for("memOrder")
@@ -7512,7 +7512,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_interact_ts_plot <- downloadHandler(
-    filename = function() paste0("ab_interaction_timeseries.", style_for("intTs")$fmt %||% "pdf"),
+    filename = function() paste0("ab_interaction_timeseries.", style_for("intTs")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$interact_ts)
       st <- style_for("intTs")
@@ -7542,7 +7542,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_interact_occ_plot <- downloadHandler(
-    filename = function() paste0("ab_interaction_occupancy.", style_for("intOcc")$fmt %||% "pdf"),
+    filename = function() paste0("ab_interaction_occupancy.", style_for("intOcc")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$interact_occ)
       st <- style_for("intOcc")
@@ -7571,7 +7571,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_interact_pair_plot <- downloadHandler(
-    filename = function() paste0("ab_interaction_pair_map.", style_for("intPair")$fmt %||% "pdf"),
+    filename = function() paste0("ab_interaction_pair_map.", style_for("intPair")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$interact_pairs)
       st <- style_for("intPair")
@@ -7616,7 +7616,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_hbond_ts_plot <- downloadHandler(
-    filename = function() paste0("ab_hbond_proxy_timeseries.", style_for("hbTs")$fmt %||% "pdf"),
+    filename = function() paste0("ab_hbond_proxy_timeseries.", style_for("hbTs")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$hbond_ts)
       st <- style_for("hbTs")
@@ -7646,7 +7646,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_hbond_pair_plot <- downloadHandler(
-    filename = function() paste0("ab_hbond_proxy_pairs.", style_for("hbPair")$fmt %||% "pdf"),
+    filename = function() paste0("ab_hbond_proxy_pairs.", style_for("hbPair")$fmt %||% "png"),
     content = function(file) {
       req(rv$data$hbond_pairs)
       st <- style_for("hbPair")
@@ -7685,7 +7685,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_clustDist_plot <- downloadHandler(
-    filename = function() paste0("cluster_distribution.", style_for("clustDist")$fmt %||% "pdf"),
+    filename = function() paste0("cluster_distribution.", style_for("clustDist")$fmt %||% "png"),
     content = function(file) {
       req(rv$clust)
       st <- style_for("clustDist")
@@ -7694,7 +7694,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_clustTime_plot <- downloadHandler(
-    filename = function() paste0("cluster_vs_time.", style_for("clustTime")$fmt %||% "pdf"),
+    filename = function() paste0("cluster_vs_time.", style_for("clustTime")$fmt %||% "png"),
     content = function(file) {
       req(rv$clust)
       st <- style_for("clustTime", defaults = list(point_size = 6))
@@ -7703,7 +7703,7 @@ output$tbl_cluster_summary <- renderDT({
     }
   )
   output$dl_clustPop_plot <- downloadHandler(
-    filename = function() paste0("cluster_population.", style_for("clustPop")$fmt %||% "pdf"),
+    filename = function() paste0("cluster_population.", style_for("clustPop")$fmt %||% "png"),
     content = function(file) {
       req(rv$clust)
       st <- style_for("clustPop", defaults = list(show_points = TRUE, line_width = 0.8))

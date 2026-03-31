@@ -27,11 +27,25 @@ ShineMD works with **AMBER** simulation files:
 
 | File | Extension |
 |---|---|
-| Topology | `.prmtop` |
+| Topology | `.prmtop`, `.parm7` |
 | Trajectory | `.nc` (NetCDF) |
 | Optional reference structure | `.pdb`, `.rst7`, `.inpcrd`, `.crd` |
 
 Multiple trajectory segments (e.g. `prod_1.nc`, `prod_2.nc`, …) are automatically detected, naturally sorted, and can be concatenated into a continuous timeline.
+
+---
+
+## Example Dataset
+
+The repository includes a compact AMBER example dataset in `examples/trpzip2_amber_tutorial/`:
+
+- `trpzip2.ff10.mbondi.parm7`
+- `trpzip2.gb.nc`
+- `trpzip2.1LE1.1.rst7`
+
+These files come from the official AMBER CPPTRAJ Tutorial C1 ("RMSD Analysis in CPPTRAJ") and are useful for quick app demos and for validating ShineMD results against the tutorial workflow and the CPPTRAJ reference implementation.
+
+Source: https://ambermd.org/tutorials/analysis/tutorial1/
 
 ---
 
@@ -84,6 +98,7 @@ ShineMD/
 ├── app.R              # Main application (UI + server)
 ├── README.md
 ├── USER_MANUAL.md     # Complete user documentation
+├── examples/          # Example datasets and provenance notes
 ├── CITATION.cff
 ├── LICENSE
 ├── .gitignore

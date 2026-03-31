@@ -48,11 +48,13 @@ ShineMD is designed around **AMBER** output files:
 
 | File type | Extension |
 |---|---|
-| Topology | `.prmtop` |
+| Topology | `.prmtop`, `.parm7` |
 | Trajectory | `.nc` (NetCDF binary) |
 | Optional reference structure | `.pdb`, `.ent`, `.rst7`, `.inpcrd`, `.crd`, `.rst` |
 
 > **Note:** Multiple trajectory segments (e.g., `prod_1.nc`, `prod_2.nc`, …) are automatically detected and can be combined into a single continuous timeline.
+>
+> **Example dataset:** The repository includes `examples/trpzip2_amber_tutorial/`, a small AMBER dataset from the official CPPTRAJ Tutorial C1 that can be used to test the app and compare RMSD outputs against the published cpptraj workflow.
 
 ---
 
@@ -122,7 +124,7 @@ The **Project tab** is the starting point. All analyses depend on the configurat
 
 Click **Browse** under *Project folder* to navigate to the folder containing your simulation files. ShineMD will automatically scan for:
 
-- One `.prmtop` topology file
+- One topology file (`.prmtop` or `.parm7`)
 - All `.nc` trajectory segment files (sorted naturally by numeric suffix)
 
 > The detected files are listed so you can confirm the correct ones were found.

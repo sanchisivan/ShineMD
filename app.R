@@ -612,7 +612,7 @@ natural_sort_nc <- function(paths) {
 }
 
 detect_inputs <- function(project_dir) {
-  prmtops <- dir_ls(project_dir, regexp="\\.prmtop$", type="file")
+  prmtops <- dir_ls(project_dir, regexp="\\.(prmtop|parm7)$", type="file")
   prmtop <- if (length(prmtops) >= 1) prmtops[[1]] else NA_character_
   ncs <- dir_ls(project_dir, regexp="\\.nc$", type="file")
   ncs <- natural_sort_nc(ncs)
@@ -1076,7 +1076,7 @@ run_basic_analysis <- function(project_dir,
   dir_create(out_dir)
 
   inp <- detect_inputs(project_dir)
-  if (is.na(inp$prmtop)) stop("No .prmtop found in selected folder.")
+  if (is.na(inp$prmtop)) stop("No topology file (.prmtop or .parm7) found in selected folder.")
   if (length(trajs_ordered) < 1) stop("No .nc trajectories selected.")
 
   prm <- read.prmtop(inp$prmtop)
@@ -2676,7 +2676,7 @@ run_rmsd_structural_clustering <- function(project_dir,
   dir_create(out_dir)
 
   inp <- detect_inputs(project_dir)
-  if (is.na(inp$prmtop)) stop("No .prmtop found in selected folder.")
+  if (is.na(inp$prmtop)) stop("No topology file (.prmtop or .parm7) found in selected folder.")
   if (length(trajs_ordered) < 1) stop("No .nc trajectories selected.")
 
   prm <- read.prmtop(inp$prmtop)
@@ -3094,7 +3094,7 @@ ui <- dashboardPage(
         tabName = "project",
         fluidRow(
           column(6,
-                 box(title = "Project folder (contains .prmtop + .nc segments)", width = 12, status = "primary",
+                 box(title = "Project folder (contains .prmtop/.parm7 + .nc segments)", width = 12, status = "primary",
                      div(class="section-header","Select folder"),
                      shinyDirButton("proj_dir_btn", "Browse…", "Select a folder"),
                      textInput("proj_dir", "Or paste folder path", value = ""),

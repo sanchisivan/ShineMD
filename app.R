@@ -3932,14 +3932,6 @@ seg3.nc"),
               tags$p(
                 tags$b("GitHub repository: "),
                 tags$a("github.com/sanchisivan/ShineMD", href = "https://github.com/sanchisivan/ShineMD", target = "_blank")
-              ),
-              tags$p(
-                tags$b("GitHub profile: "),
-                tags$a("github.com/sanchisivan", href = "https://github.com/sanchisivan", target = "_blank")
-              ),
-              tags$p(
-                tags$b("Repository issues: "),
-                tags$a("github.com/sanchisivan/ShineMD/issues", href = "https://github.com/sanchisivan/ShineMD/issues", target = "_blank")
               )
             )
           )

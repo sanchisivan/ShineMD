@@ -4640,9 +4640,7 @@ server <- function(input, output, session) {
     }
 
     tryCatch({
-      progress_with_waiter("Running basic analysis",
-                           "Reading trajectories, aligning frames, and computing baseline structural descriptors.",
-                           message = "Computing metrics...", value = 0, {
+      withProgress(message = "Computing metrics...", value = 0, {
         t0 <- Sys.time()
         logf <- function(msg) { rv$log <- paste0(rv$log, msg, "\n") }
         progress_cb <- function(value, detail = NULL) { setProgress(value = value, detail = detail) }
@@ -4789,9 +4787,7 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running bilayer thickness...\n")
     tryCatch({
-      progress_with_waiter("Computing bilayer thickness",
-                           "Reading the selected trajectories and estimating the bilayer thickness time series.",
-                           message = "Computing bilayer thickness...", value = 0, {
+      withProgress(message = "Computing bilayer thickness...", value = 0, {
         df <- compute_bilayer_thickness(
           trajs_ordered = trajs, prm = (rv$prm_obj %||% read.prmtop(rv$prmtop)), membrane_resid = mem_resid,
           head_atoms = input$thick_head_atoms,
@@ -4850,9 +4846,7 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running area per lipid...\n")
     tryCatch({
-      progress_with_waiter("Computing area per lipid",
-                           "Reading the selected trajectories and computing leaflet-level area-per-lipid values.",
-                           message = "Computing APL...", value = 0, {
+      withProgress(message = "Computing APL...", value = 0, {
         res <- compute_area_per_lipid(
           trajs_ordered = trajs, prm = (rv$prm_obj %||% read.prmtop(rv$prmtop)), membrane_resid = mem_resid,
           n_lip_leaflet = n_leaf,
@@ -4915,9 +4909,7 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running lipid enrichment...\n")
     tryCatch({
-      progress_with_waiter("Computing lipid enrichment",
-                           "Scanning membrane contacts around the selected target and aggregating enrichment statistics.",
-                           message = "Computing lipid enrichment...", value = 0, {
+      withProgress(message = "Computing lipid enrichment...", value = 0, {
         sels <- make_selections(
           prm = (rv$prm_obj %||% read.prmtop(rv$prmtop)),
           pep_resno = pep_resno,
@@ -4994,9 +4986,7 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running membrane density profiles...\n")
     tryCatch({
-      progress_with_waiter("Computing membrane density profiles",
-                           "Reading the selected trajectories and building membrane-centered density histograms.",
-                           message = "Computing membrane density profiles...", value = 0, {
+      withProgress(message = "Computing membrane density profiles...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         sels <- make_selections(
           prm = prm_use,
@@ -5069,9 +5059,7 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running lipid tail order calculation...\n")
     tryCatch({
-      progress_with_waiter("Computing lipid tail order",
-                           "Reading the selected trajectories and estimating per-segment order parameters.",
-                           message = "Computing lipid tail order...", value = 0, {
+      withProgress(message = "Computing lipid tail order...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         df <- compute_lipid_tail_order(
           trajs_ordered = trajs, prm = prm_use, membrane_resid = mem_resid,
@@ -5140,9 +5128,7 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running A/B interaction analysis...\n")
     tryCatch({
-      progress_with_waiter("Computing A/B interactions",
-                           "Reading the selected trajectories and evaluating distance, contact, and occupancy metrics.",
-                           message = "Computing A/B interactions...", value = 0, {
+      withProgress(message = "Computing A/B interactions...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         sels <- make_selections(
           prm = prm_use,
@@ -5220,9 +5206,7 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running A/B hydrogen-bond proxy analysis...\n")
     tryCatch({
-      progress_with_waiter("Computing A/B H-bond proxy",
-                           "Reading the selected trajectories and evaluating hydrogen-bond proxy contacts.",
-                           message = "Computing A/B H-bond proxy...", value = 0, {
+      withProgress(message = "Computing A/B H-bond proxy...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         sels <- make_selections(
           prm = prm_use,
@@ -5313,9 +5297,7 @@ server <- function(input, output, session) {
                                     length(unique(plan_df$segment)), nrow(plan_df)))
 
     tryCatch({
-      progress_with_waiter("Running structural clustering",
-                           "Reading trajectories, building the RMSD distance matrix, and assigning clusters.",
-                           message = "Clustering frames (RMSD)...", value = 0, {
+      withProgress(message = "Clustering frames (RMSD)...", value = 0, {
         t0 <- Sys.time()
         logf <- function(msg) { rv$log <- paste0(rv$log, msg, "\n") }
         progress_cb <- function(value, detail = NULL) { setProgress(value = value, detail = detail) }
@@ -5384,9 +5366,7 @@ server <- function(input, output, session) {
     dir_create(out_dir, recurse = TRUE)
 
     tryCatch({
-      progress_with_waiter("Exporting cluster structures",
-                           "Preparing representative structures and writing clustering export files.",
-                           message = "Exporting cluster structures...", value = 0, {
+      withProgress(message = "Exporting cluster structures...", value = 0, {
         incProgress(0.05, detail = "Writing tables")
 
       # Always export tables
@@ -5520,10 +5500,8 @@ server <- function(input, output, session) {
     dir_create(out_dir, recurse = TRUE)
 
     tryCatch({
-      progress_with_waiter("Exporting selected frame",
-                           "Preparing the requested frame and writing the exported PDB file.",
-                           message = "Exporting selected frame...", value = 0, {
-        incProgress(0.15, detail = "Preparing selection")
+      with_waiter_modal("Exporting selected frame",
+                        "Preparing the requested frame and writing the exported PDB file.", {
       prm <- read.prmtop(rv$clust$prmtop_path)
       natom <- get_prm_natom(prm)
 
@@ -5596,7 +5574,6 @@ server <- function(input, output, session) {
       if (is.null(seg_path)) stop("Could not locate trajectory file for segment: ", seg)
 
       xyz <- read.ncdf(seg_path, first = fr, last = fr, stride = 1, at.sel = at_sel_export, verbose = FALSE)
-      incProgress(0.75, detail = "Writing PDB")
 
       fn <- sprintf("export_frame_%s_frame_%d.pdb", tools::file_path_sans_ext(seg), fr)
       if (!is.na(t_used)) {

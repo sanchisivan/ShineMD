@@ -123,11 +123,11 @@ ShineMD/
 
 ## Citation
 
-If you use ShineMD in academic work, please cite this repository:
+If you use ShineMD in academic work, please cite the associated manuscript/preprint:
 
-> Sanchis I. *ShineMD: an interactive Shiny application for molecular dynamics trajectory analysis.* GitHub repository. https://github.com/sanchisivan/ShineMD
+> Sanchis I, Siano AS. *ShineMD: an automated pure-R platform with a graphical user interface for integrated analysis of AMBER molecular dynamics trajectories.* ChemRxiv preprint, DOI pending.
 
-A `CITATION.cff` file is included for reference managers and GitHub's *Cite this repository* feature.
+The `CITATION.cff` file includes this preferred citation for reference managers and GitHub's *Cite this repository* feature. The DOI can be added once the ChemRxiv record is available.
 
 ---
 

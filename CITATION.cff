@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: "ShineMD"
-message: "If you use this software, please cite the repository."
+message: "If you use this software, please cite the associated manuscript/preprint."
 type: software
 authors:
   - family-names: "Sanchis"
@@ -14,3 +14,14 @@ abstract: >
   trajectory analysis and visualization, including structural analysis,
   clustering, dimensionality reduction, interaction analysis, and
   publication-ready outputs.
+preferred-citation:
+  type: article
+  title: "ShineMD: an automated pure-R platform with a graphical user interface for integrated analysis of AMBER molecular dynamics trajectories"
+  authors:
+    - family-names: "Sanchis"
+      given-names: "Ivan"
+    - family-names: "Siano"
+      given-names: "Alvaro S."
+  journal: "ChemRxiv"
+  status: "preprint"
+  note: "ChemRxiv preprint; DOI pending"

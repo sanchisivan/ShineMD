@@ -55,6 +55,8 @@ ShineMD is designed around **AMBER** output files:
 > **Note:** Multiple trajectory segments (e.g., `prod_1.nc`, `prod_2.nc`, …) are automatically detected and can be combined into a single continuous timeline.
 >
 > **Example dataset:** The repository includes `examples/trpzip2_amber_tutorial/`, a small AMBER dataset from the official CPPTRAJ Tutorial C1 that can be used to test the app and compare RMSD outputs against the published cpptraj workflow.
+>
+> **Membrane example:** The repository also includes `examples/membrane_pep/`, a reduced membrane-peptide dataset for testing membrane-focused features such as density profiles and lipid tail order. The peptide was truncated to its last 4 residues before release because the full system is still unpublished.
 
 ---
 
@@ -186,6 +188,8 @@ Defines the reference frame against which RMSD is calculated:
 ### 5.6 Membrane configuration
 
 These settings are required only if your system contains a lipid bilayer.
+
+For a ready-to-run example, see `examples/membrane_pep/README.md`, which includes a reduced membrane-peptide test case and recommended settings for density and tail-order analyses.
 
 | Parameter | Description |
 |---|---|
@@ -369,6 +373,14 @@ Some panels open a **trajectory selection dialog** before computing, allowing yo
 | **Bin width (Å)** | Histogram bin size along z-axis. Default: 1.0 Å. Smaller bins give finer resolution. |
 | **Z range (half-range)** | Limits the profile to ±N Å from the bilayer centre. Leave blank to use the full z range. |
 
+Example settings for `examples/membrane_pep/`:
+
+- `Headgroup atom name(s)`: `P31`
+- `Tail atom regex`: `^C2[0-9]+$|^C3[0-9]+$`
+- `Include target density`: `Selection A`
+- `Bin width (Å)`: `1`
+- `Half-profile range |z|`: leave blank
+
 ### 10.7 Lipid tail order parameter |S|
 
 - Approximates the segmental order parameter |S| for lipid acyl chains, which reflects chain rigidity and packing order.
@@ -386,6 +398,16 @@ Some panels open a **trajectory selection dialog** before computing, allowing yo
 | **Chain 1 / Chain 2 atom regex** | Regex pattern matching the carbon atom names of each chain. |
 | **Residue filter** | Restrict order calculation to specific lipid residues. Leave blank to use all. |
 | **Group by lipid type** | Compute and plot separate order profiles for each lipid residue name. |
+
+Example settings for `examples/membrane_pep/`:
+
+- `Tail-order topology mode`: `Split residues: chain 1 and chain 2 are different residue names`
+- `Residue names for tail order`: `PA,OL`
+- `sn1 / chain 1 residue names`: `PA`
+- `sn2 / chain 2 residue names`: `OL`
+- `sn1 chain atom regex`: `^C1([2-9]|[1-9][0-9])$`
+- `sn2 chain atom regex`: `^C1([2-9]|[1-9][0-9])$`
+- `Separate by lipid type`: enabled
 
 ---
 

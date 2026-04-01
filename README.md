@@ -35,9 +35,9 @@ Multiple trajectory segments (e.g. `prod_1.nc`, `prod_2.nc`, …) are automatica
 
 ---
 
-## Example Dataset
+## Example Datasets
 
-The repository includes a compact AMBER example dataset in `examples/trpzip2_amber_tutorial/`:
+The repository includes compact AMBER example datasets:
 
 - `trpzip2.ff10.mbondi.parm7`
 - `trpzip2.gb.nc`
@@ -46,6 +46,13 @@ The repository includes a compact AMBER example dataset in `examples/trpzip2_amb
 These files come from the official AMBER CPPTRAJ Tutorial C1 ("RMSD Analysis in CPPTRAJ") and are useful for quick app demos and for validating ShineMD results against the tutorial workflow and the CPPTRAJ reference implementation.
 
 Source: https://ambermd.org/tutorials/analysis/tutorial1/
+
+The repository also includes a reduced membrane example in `examples/membrane_pep/`:
+
+- `mem_pep.prmtop`
+- `mem_pep.nc`
+
+This dataset is derived from the membrane system used as an example in the ShineMD manuscript, but the peptide was truncated to its last 4 residues because the full system is still unpublished. It is intended for testing membrane-specific features such as density profiles and lipid tail order. Recommended settings are documented in `examples/membrane_pep/README.md`.
 
 ---
 

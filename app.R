@@ -4479,17 +4479,19 @@ server <- function(input, output, session) {
   }
 
   with_waiter_modal <- function(title_text, subtitle = "Processing data...", expr) {
+    caller_env <- parent.frame()
     show_waiter_modal(title_text, subtitle)
     on.exit(removeModal(), add = TRUE)
-    eval.parent(substitute(expr))
+    eval(substitute(expr), envir = caller_env)
   }
 
   progress_with_waiter <- function(title_text, subtitle = "Processing data...",
                                    message = title_text, value = 0, expr) {
+    caller_env <- parent.frame()
     show_waiter_modal(title_text, subtitle)
     on.exit(removeModal(), add = TRUE)
     withProgress(message = message, value = value, {
-      eval.parent(substitute(expr))
+      eval(substitute(expr), envir = caller_env)
     })
   }
 

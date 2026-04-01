@@ -545,6 +545,22 @@ table.dataTable tbody tr:hover {
   .modal-body ul { padding-left: 22px !important; }
   .modal-body li { line-height: 1.5 !important; margin-bottom: 4px !important; }
   .modal-body p, .modal-body li { color: #e8ecf1 !important; }
+  .waiter-modal .modal-dialog { margin-top: 12vh; max-width: 560px; }
+  .waiter-shell { text-align: center; padding: 14px 10px 8px 10px; }
+  .waiter-spinner { font-size: 38px; color: var(--accent-cyan); margin-bottom: 12px; }
+  .waiter-title {
+    color: var(--text-primary);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .waiter-subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 440px;
+    margin: 0 auto;
+  }
 
   /* Verbatim / pre text (log, session info) */
   pre, .shiny-text-output {
@@ -3640,6 +3656,8 @@ seg3.nc"),
                                 "Exports go to results_ShineMD/clustering_rmsd/"),
                      hr(),
                      div(class="section-header","Export a specific frame as PDB"),
+                     tags$small(style="color: var(--text-muted); display:block; margin-bottom:10px;",
+                                "Requires a completed clustering run. This export uses the current clustering frame map and clustering window."),
                      selectInput("single_frame_mode", "Pick frame by",
                                  choices = c("Global time (ns)"="time",
                                              "Frame index"="segframe",
@@ -3662,7 +3680,9 @@ seg3.nc"),
                                    selected = "medoid")
                      ),
                      actionButton("export_single_frame", "Export selected frame", icon=icon("file-export"),
-                                  class="btn-primary", width="100%")
+                                  class="btn-primary", width="100%"),
+                     tags$small(style="color: var(--text-muted); display:block; margin-top:8px;",
+                                "If clustering has not been run yet, compute clustering first in this tab and then return to this export panel.")
                  )
           ),
           column(8,
@@ -3848,7 +3868,7 @@ seg3.nc"),
                       style = "font-size: 18px; font-weight: 600; color: #eef4ff; margin-bottom: 4px;"
                     ),
                     tags$div(
-                      "Group leader",
+                      "Corresponding author / scientific contact",
                       style = "font-size: 15px; margin-bottom: 6px;",
                       class = "about-subtle"
                     ),
@@ -3870,7 +3890,7 @@ seg3.nc"),
                       style = "font-size: 18px; font-weight: 600; color: #eef4ff; margin-bottom: 4px;"
                     ),
                     tags$div(
-                      "App development / repository contact",
+                      "App development / repository maintainer",
                       style = "font-size: 15px; margin-bottom: 6px;",
                       class = "about-subtle"
                     ),
@@ -3901,16 +3921,25 @@ seg3.nc"),
               class = "about-box-text",
               style = "padding: 4px 2px;",
               tags$p(
-                "Citation information will be updated once the final paper or formal repository citation is available."
+                tags$b("Manuscript title:"), tags$br(),
+                "ShineMD: an automated pure-R platform with a graphical user interface for integrated analysis of AMBER molecular dynamics trajectories"
               ),
               tags$p(
-                tags$b("Suggested temporary citation:"), tags$br(),
-                "Sanchis I, Siano AS, et al. ShineMD: an interactive Shiny app for molecular dynamics trajectory analysis. GitHub repository (forthcoming)."
+                tags$b("Preferred citation:"), tags$br(),
+                "Sanchis I, Siano AS. ShineMD: an automated pure-R platform with a graphical user interface for integrated analysis of AMBER molecular dynamics trajectories. ChemRxiv preprint, DOI pending."
               ),
               tags$hr(style = "border-color: rgba(255,255,255,0.08);"),
               tags$p(
-                tags$b("GitHub: "),
+                tags$b("GitHub repository: "),
+                tags$a("github.com/sanchisivan/ShineMD", href = "https://github.com/sanchisivan/ShineMD", target = "_blank")
+              ),
+              tags$p(
+                tags$b("GitHub profile: "),
                 tags$a("github.com/sanchisivan", href = "https://github.com/sanchisivan", target = "_blank")
+              ),
+              tags$p(
+                tags$b("Repository issues: "),
+                tags$a("github.com/sanchisivan/ShineMD/issues", href = "https://github.com/sanchisivan/ShineMD/issues", target = "_blank")
               )
             )
           )
@@ -4434,6 +4463,36 @@ server <- function(input, output, session) {
     showModal(do.call(modalDialog, modal_bits))
   }
 
+  show_waiter_modal <- function(title_text = "Please wait", subtitle = "Processing data...") {
+    showModal(modalDialog(
+      class = "themed-modal waiter-modal",
+      title = NULL,
+      easyClose = FALSE,
+      footer = NULL,
+      tags$div(
+        class = "waiter-shell",
+        tags$div(class = "waiter-spinner", icon("spinner", class = "fa-spin")),
+        tags$div(class = "waiter-title", title_text),
+        tags$div(class = "waiter-subtitle", subtitle)
+      )
+    ))
+  }
+
+  with_waiter_modal <- function(title_text, subtitle = "Processing data...", expr) {
+    show_waiter_modal(title_text, subtitle)
+    on.exit(removeModal(), add = TRUE)
+    eval.parent(substitute(expr))
+  }
+
+  progress_with_waiter <- function(title_text, subtitle = "Processing data...",
+                                   message = title_text, value = 0, expr) {
+    show_waiter_modal(title_text, subtitle)
+    on.exit(removeModal(), add = TRUE)
+    withProgress(message = message, value = value, {
+      eval.parent(substitute(expr))
+    })
+  }
+
   show_traj_subset_modal <- function(modal_key, title_text, trajs, action_label = "Compute") {
     labs <- basename(trajs)
     showModal(modalDialog(
@@ -4489,21 +4548,27 @@ server <- function(input, output, session) {
       rv$trajs <- character()
       return()
     }
-    rv$proj_dir <- p
-    inp <- detect_inputs(p)
-    rv$prmtop <- if (!is.na(inp$prmtop)) inp$prmtop else NULL
-    rv$trajs <- inp$trajs
+    with_waiter_modal(
+      "Reading project files",
+      "Detecting the topology, indexing trajectory segments, and caching the topology for faster downstream analyses.",
+      {
+        rv$proj_dir <- p
+        inp <- detect_inputs(p)
+        rv$prmtop <- if (!is.na(inp$prmtop)) inp$prmtop else NULL
+        rv$trajs <- inp$trajs
 
-    # Cache parsed topology for downstream (faster advanced analyses)
-    rv$prm_obj <- NULL
-    if (!is.null(rv$prmtop) && file.exists(rv$prmtop)) {
-      rv$prm_obj <- tryCatch(read.prmtop(rv$prmtop), error = function(e) NULL)
-    }
+        # Cache parsed topology for downstream (faster advanced analyses)
+        rv$prm_obj <- NULL
+        if (!is.null(rv$prmtop) && file.exists(rv$prmtop)) {
+          rv$prm_obj <- tryCatch(read.prmtop(rv$prmtop), error = function(e) NULL)
+        }
 
-    # prefill order box with detected order (safe default)
-    if (length(rv$trajs) > 0) {
-      updateTextAreaInput(session, "traj_order", value = paste(basename(rv$trajs), collapse="\n"))
-    }
+        # prefill order box with detected order (safe default)
+        if (length(rv$trajs) > 0) {
+          updateTextAreaInput(session, "traj_order", value = paste(basename(rv$trajs), collapse="\n"))
+        }
+      }
+    )
   })
 
   output$proj_status <- renderUI({
@@ -4581,7 +4646,9 @@ server <- function(input, output, session) {
     }
 
     tryCatch({
-      withProgress(message = "Computing metrics...", value = 0, {
+      progress_with_waiter("Running basic analysis",
+                           "Reading trajectories, aligning frames, and computing baseline structural descriptors.",
+                           message = "Computing metrics...", value = 0, {
         t0 <- Sys.time()
         logf <- function(msg) { rv$log <- paste0(rv$log, msg, "\n") }
         progress_cb <- function(value, detail = NULL) { setProgress(value = value, detail = detail) }
@@ -4728,7 +4795,9 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running bilayer thickness...\n")
     tryCatch({
-      withProgress(message = "Computing bilayer thickness...", value = 0, {
+      progress_with_waiter("Computing bilayer thickness",
+                           "Reading the selected trajectories and estimating the bilayer thickness time series.",
+                           message = "Computing bilayer thickness...", value = 0, {
         df <- compute_bilayer_thickness(
           trajs_ordered = trajs, prm = (rv$prm_obj %||% read.prmtop(rv$prmtop)), membrane_resid = mem_resid,
           head_atoms = input$thick_head_atoms,
@@ -4787,7 +4856,9 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running area per lipid...\n")
     tryCatch({
-      withProgress(message = "Computing APL...", value = 0, {
+      progress_with_waiter("Computing area per lipid",
+                           "Reading the selected trajectories and computing leaflet-level area-per-lipid values.",
+                           message = "Computing APL...", value = 0, {
         res <- compute_area_per_lipid(
           trajs_ordered = trajs, prm = (rv$prm_obj %||% read.prmtop(rv$prmtop)), membrane_resid = mem_resid,
           n_lip_leaflet = n_leaf,
@@ -4850,7 +4921,9 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running lipid enrichment...\n")
     tryCatch({
-      withProgress(message = "Computing lipid enrichment...", value = 0, {
+      progress_with_waiter("Computing lipid enrichment",
+                           "Scanning membrane contacts around the selected target and aggregating enrichment statistics.",
+                           message = "Computing lipid enrichment...", value = 0, {
         sels <- make_selections(
           prm = (rv$prm_obj %||% read.prmtop(rv$prmtop)),
           pep_resno = pep_resno,
@@ -4927,7 +5000,9 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running membrane density profiles...\n")
     tryCatch({
-      withProgress(message = "Computing membrane density profiles...", value = 0, {
+      progress_with_waiter("Computing membrane density profiles",
+                           "Reading the selected trajectories and building membrane-centered density histograms.",
+                           message = "Computing membrane density profiles...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         sels <- make_selections(
           prm = prm_use,
@@ -5000,7 +5075,9 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running lipid tail order calculation...\n")
     tryCatch({
-      withProgress(message = "Computing lipid tail order...", value = 0, {
+      progress_with_waiter("Computing lipid tail order",
+                           "Reading the selected trajectories and estimating per-segment order parameters.",
+                           message = "Computing lipid tail order...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         df <- compute_lipid_tail_order(
           trajs_ordered = trajs, prm = prm_use, membrane_resid = mem_resid,
@@ -5069,7 +5146,9 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running A/B interaction analysis...\n")
     tryCatch({
-      withProgress(message = "Computing A/B interactions...", value = 0, {
+      progress_with_waiter("Computing A/B interactions",
+                           "Reading the selected trajectories and evaluating distance, contact, and occupancy metrics.",
+                           message = "Computing A/B interactions...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         sels <- make_selections(
           prm = prm_use,
@@ -5147,7 +5226,9 @@ server <- function(input, output, session) {
 
     rv$log <- paste0(rv$log, "Running A/B hydrogen-bond proxy analysis...\n")
     tryCatch({
-      withProgress(message = "Computing A/B H-bond proxy...", value = 0, {
+      progress_with_waiter("Computing A/B H-bond proxy",
+                           "Reading the selected trajectories and evaluating hydrogen-bond proxy contacts.",
+                           message = "Computing A/B H-bond proxy...", value = 0, {
         prm_use <- (rv$prm_obj %||% read.prmtop(rv$prmtop))
         sels <- make_selections(
           prm = prm_use,
@@ -5238,7 +5319,9 @@ server <- function(input, output, session) {
                                     length(unique(plan_df$segment)), nrow(plan_df)))
 
     tryCatch({
-      withProgress(message = "Clustering frames (RMSD)...", value = 0, {
+      progress_with_waiter("Running structural clustering",
+                           "Reading trajectories, building the RMSD distance matrix, and assigning clusters.",
+                           message = "Clustering frames (RMSD)...", value = 0, {
         t0 <- Sys.time()
         logf <- function(msg) { rv$log <- paste0(rv$log, msg, "\n") }
         progress_cb <- function(value, detail = NULL) { setProgress(value = value, detail = detail) }
@@ -5307,7 +5390,9 @@ server <- function(input, output, session) {
     dir_create(out_dir, recurse = TRUE)
 
     tryCatch({
-      withProgress(message = "Exporting cluster structures...", value = 0, {
+      progress_with_waiter("Exporting cluster structures",
+                           "Preparing representative structures and writing clustering export files.",
+                           message = "Exporting cluster structures...", value = 0, {
         incProgress(0.05, detail = "Writing tables")
 
       # Always export tables
@@ -5428,14 +5513,23 @@ server <- function(input, output, session) {
 
   observeEvent(input$export_single_frame, {
     req(rv$proj_dir)
+    if (is.null(rv$clust)) {
+      showNotification(
+        "Run clustering first. 'Export selected frame' uses the current clustering results, frame map, and clustering window.",
+        type = "warning",
+        duration = 8
+      )
+      return()
+    }
 
     out_dir <- cluster_results_dir(rv$proj_dir)
     dir_create(out_dir, recurse = TRUE)
 
     tryCatch({
-      withProgress(message = "Exporting selected frame...", value = 0, {
+      progress_with_waiter("Exporting selected frame",
+                           "Preparing the requested frame and writing the exported PDB file.",
+                           message = "Exporting selected frame...", value = 0, {
         incProgress(0.15, detail = "Preparing selection")
-      req(rv$clust)
       prm <- read.prmtop(rv$clust$prmtop_path)
       natom <- get_prm_natom(prm)
 

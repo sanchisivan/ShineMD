@@ -98,13 +98,23 @@ Or download the ZIP archive from the GitHub repository page and extract it.
 
 ## 3. Launching the Application
 
-Open R (or RStudio) in the `ShineMD/` project folder and run:
+Open the `ShineMD/` project folder in **RStudio** or start **R** in that folder, then run:
 
 ```r
 shiny::runApp()
 ```
 
-The application will open in your default web browser. If it does not open automatically, navigate to the URL shown in the R console (typically `http://127.0.0.1:XXXX`).
+In RStudio, you can also open `app.R` and click **Run App**. The application will open in your default web browser. If it does not open automatically, navigate to the URL shown in the R console (typically `http://127.0.0.1:XXXX`).
+
+### 3.1 Quick start with included examples
+
+If you want to test the application immediately, the repository includes example datasets that exercise different parts of the workflow:
+
+- `examples/trpzip2_amber_tutorial/`: compact AMBER tutorial dataset for testing basic structural metrics and comparing against the CPPTRAJ tutorial workflow.
+- `examples/membrane_pep/`: reduced membrane-peptide system for testing membrane density profiles and lipid tail-order analyses.
+- `examples/bche_pep/`: reduced enzyme-peptide system for testing Selection A / Selection B metrics and all plots in the **Interactions** tab.
+
+The dataset-specific settings are documented in the corresponding `README.md` files inside each example folder.
 
 ---
 
@@ -640,7 +650,7 @@ The About tab shows authorship, institutional affiliation, contact details, and 
 
 **Suggested citation:**
 
-> Sanchis I. *ShineMD: an interactive Shiny application for molecular dynamics trajectory analysis.* GitHub repository. https://github.com/sanchisivan/ShineMD
+> Sanchis I, Siano AS. *ShineMD: an automated pure-R platform with a graphical user interface for integrated analysis of AMBER molecular dynamics trajectories.* ChemRxiv preprint, DOI pending.
 
 ---
 
@@ -655,6 +665,8 @@ Every analysis panel in ShineMD provides download buttons. The following formats
 | **Bulk downloads** | ZIP archive (for large result sets) |
 | **Structures** | PDB (medoids, centroids, single frames) |
 | **Session info** | Plain text (`.txt`) |
+
+For most plot panels, the exported filename extension matches the format selected in the local **Plot styling + export** controls. The current default export format is **PNG**. Two special cases are fixed-output exports: the clustering dendrogram is exported as **PDF**, and the pairwise RMSD heatmap is exported as **PNG**.
 
 Results are saved to `<project_folder>/results_ShineMD/` when using the Export buttons in the Clustering tab (structure files).
 
@@ -696,6 +708,8 @@ project_folder/
         ├── cluster_dendrogram.pdf
         └── pairwise_rmsd_heatmap.png
 ```
+
+The tree above is illustrative. In current versions of ShineMD, most plot filenames use the export format selected by the user, so files such as `rmsd_regionA`, `rmsf_regionA`, `rg_regionA`, `pca_regionA_distribution`, `membrane_density_profile`, `lipid_tail_order_profile`, `ab_interaction_pair_map`, and `ab_hbond_proxy_pairs` may end in `.png`, `.pdf`, or `.svg`. The main fixed-format exceptions are `free_energy_landscape.png`, `cluster_dendrogram.pdf`, and `pairwise_rmsd_heatmap.png`.
 
 ---
 

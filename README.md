@@ -2,6 +2,10 @@
 
 **ShineMD** is an interactive R Shiny application for molecular dynamics (MD) trajectory analysis and visualization. It provides a fully graphical, browser-based interface for processing and exploring MD simulations — no scripting required.
 
+The app is designed to bring routine trajectory post-processing into a single local workflow. Instead of moving between command-line tools, custom scripts, spreadsheets, and plotting software, users can load a project folder and compute structural descriptors, dimensionality reduction, membrane-oriented analyses, interaction profiles, clustering, and representative-structure exports from one interface.
+
+ShineMD is especially useful for users who want publication-ready figures and interpretable analysis panels without building custom pipelines for every new system. It supports both general soluble biomolecular systems and more specialized cases such as membrane-active peptides, lipid bilayers, and protein-peptide interaction studies.
+
 Developed at the **Laboratory of Bioactive Peptides (LPB)**, Faculty of Biochemistry and Biological Sciences, National University of the Littoral (UNL), Santa Fe, Argentina.
 
 ---
@@ -17,7 +21,7 @@ Developed at the **Laboratory of Bioactive Peptides (LPB)**, Faculty of Biochemi
 | **Clustering** | Hierarchical (Ward.D2) and k-medoids (PAM), Structure export (medoids, centroids, single frames) |
 | **Reproducibility** | Session info export, package version tracking |
 
-All plots are interactive (pan, zoom, hover), support dark/light themes, and can be exported as PDF, PNG, or SVG. Data tables are downloadable as CSV.
+All plots are interactive (pan, zoom, hover), support dark/light themes, and can be exported as PDF, PNG, or SVG. Data tables are downloadable as CSV, and the app also helps preserve reproducibility through export helpers and session information tracking.
 
 ---
 

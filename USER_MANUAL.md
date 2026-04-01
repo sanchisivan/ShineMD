@@ -57,6 +57,8 @@ ShineMD is designed around **AMBER** output files:
 > **Example dataset:** The repository includes `examples/trpzip2_amber_tutorial/`, a small AMBER dataset from the official CPPTRAJ Tutorial C1 that can be used to test the app and compare RMSD outputs against the published cpptraj workflow.
 >
 > **Membrane example:** The repository also includes `examples/membrane_pep/`, a reduced membrane-peptide dataset for testing membrane-focused features such as density profiles and lipid tail order. The peptide was truncated to its last 4 residues before release because the full system is still unpublished.
+>
+> **BChE-peptide example:** The repository also includes `examples/bche_pep/`, a reduced enzyme-peptide dataset for testing Selection A/Selection B structural metrics and the Interactions tab. The peptide was truncated before release because the full system is still unpublished.
 
 ---
 
@@ -161,6 +163,11 @@ A secondary region — typically a ligand, membrane-interacting peptide, a secon
 - Enter residue numbers or ranges as for Selection A.
 - If not provided, all Selection B tabs will be hidden.
 - Selection B is used for Rg-B, RMSD-B, interaction analyses, and some membrane analyses.
+
+Ready-to-run example:
+
+- `examples/bche_pep/` uses `Selection A = 1:535` and `Selection B = 536:539`.
+- For RMSD-focused runs where you want to avoid highly flexible enzyme termini, you can use `Selection A = 5:530` instead.
 
 #### Exclude residues
 
@@ -414,6 +421,12 @@ Example settings for `examples/membrane_pep/`:
 ## 11. Interactions Tab
 
 This tab analyses the interactions between **Selection A** and **Selection B**. Both selections must be defined. A trajectory selection dialog is shown before computing; choose the segments to include.
+
+Ready-to-run example:
+
+- `examples/bche_pep/` is intended for this tab.
+- Recommended selections: `Selection A = 1:535`, `Selection B = 536:539`.
+- If you want to reduce the influence of highly flexible enzyme termini in RMSD-related analyses, use `Selection A = 5:530`.
 
 ### 11.1 Interaction time series
 

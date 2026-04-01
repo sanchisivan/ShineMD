@@ -21,7 +21,7 @@ Recommended Project tab settings:
 - `Last frame`: leave blank
 - `Combine segments`: enabled
 - `Trajectory order`: `mem_pep.nc`
-- `Selection A residue numbers`: `266:269`
+- `Selection A residue numbers`: `265:269`
 - `Selection B residue numbers`: leave blank
 - `Exclude residue names`: `HOH,WAT,Na+,Cl-`
 - `Alignment selection`: `Selection A backbone (N,CA,C,O)`

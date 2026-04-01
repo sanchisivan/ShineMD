@@ -54,6 +54,13 @@ The repository also includes a reduced membrane example in `examples/membrane_pe
 
 This dataset is derived from the membrane system used as an example in the ShineMD manuscript, but the peptide was truncated to its last 4 residues because the full system is still unpublished. It is intended for testing membrane-specific features such as density profiles and lipid tail order. Recommended settings are documented in `examples/membrane_pep/README.md`.
 
+The repository also includes a reduced BChE-peptide example in `examples/bche_pep/`:
+
+- `bche_pep.prmtop`
+- `bche_pep.nc`
+
+This dataset is derived from the BChE-peptide system used as an example in the manuscript, with the peptide truncated because the full system is still unpublished. It is intended for testing structural A/B metrics and the Interactions tab. Recommended settings are documented in `examples/bche_pep/README.md`.
+
 ---
 
 ## Requirements
@@ -78,13 +85,13 @@ Clone the repository:
 git clone https://github.com/sanchisivan/ShineMD.git
 ```
 
-Open R in the `ShineMD/` folder and run:
+Open the `ShineMD/` folder in **RStudio** or start **R** in that folder, then run:
 
 ```r
 shiny::runApp()
 ```
 
-The app will open in your default web browser. If not, navigate to the URL shown in the R console (e.g. `http://127.0.0.1:XXXX`).
+In RStudio, you can also open `app.R` and click **Run App**. The app will open in your default web browser. If not, navigate to the URL shown in the R console (e.g. `http://127.0.0.1:XXXX`).
 
 ---
 

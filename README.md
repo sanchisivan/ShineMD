@@ -8,6 +8,14 @@ ShineMD is especially useful for users who want publication-ready figures and in
 
 Developed at the **Laboratory of Bioactive Peptides (LPB)**, Faculty of Biochemistry and Biological Sciences, National University of the Littoral (UNL), Santa Fe, Argentina.
 
+<p align="center">
+  <img src="www/readme_project_tab.png" alt="ShineMD Project tab screenshot" width="100%"/>
+</p>
+
+<p align="center">
+  <em>Project tab overview showing folder detection, run settings, and the main workflow entry point.</em>
+</p>
+
 ---
 
 ## Features
